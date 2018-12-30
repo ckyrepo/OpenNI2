@@ -1,3 +1,66 @@
+#安装完必要package如###Ｌinux中所示，之后，按如下步骤
+find . -iname platform.arm
+gedit ./ThirdParty/PSCommon/BuildSystem/Platform.Arm
+找到：
+CFLAGS += -march=armv7-a -mtune=cortex-a9 -mfpu=neon -mfloat-abi=softfp #-mcpu=cortex-a8
+修改为：
+CFLAGS += -march=armv7-a -mtune=cortex-a15 -mfpu=neon-vfpv4 -mfloat-abi=hard 		
+打开gedit，修改CommonCppMakefile文件	
+gedit ThirdParty/PSCommon/BuildSystem/CommonCppMakefile
+找到这两行：
+LDFLAGS += -Wl,-rpath ./
+OUTPUT_COMMAND = (CXX)−o(OUTPUT_FILE) (OBJFILES)(LDFLAGS)
+在这两行代码中间加入以下代码：
+ifneq (“$(OSTYPE)”,”Darwin”)
+    LDFLAGS += -lpthread
+endif
+保存退出。
+添加例程以检查安装是否正确
+gedit Makefile
+在文件末尾添加：
+core_samples: $(CORE_SAMPLES)
+保存退出。
+开始编译	
+make
+make core_samples
+GLUT_SUPPORTED=1 make tools(这一步可能会有问题，不过不影响)
+OpenNI2测试 
+cd ~/openni2/OpenNI2/Bin/x64-Release
+连接Xtion Pro Live到你的电脑 
+./SimpleRead
+终端有数字输出
+./NiViewer
+有图像输出1,2,3,...，+分别对应不同数据流 
+有时需要sudo
+正式安装OpenNI2 
+进入Packaging/Linux文件夹
+sudo sh install.sh
+将“lib”文件（动态链接库）和“include”文件（头文件）复制到系统路径下
+进入OpenNI2目录
+sudo cp -r Include /usr/include/openni2
+sudo cp -r Bin/x64-Release/OpenNI2 /usr/lib/
+sudo cp Bin/x64-Release/libOpenNI2.* /usr/lib/
+更新 library cache:
+sudo ldconfig
+设置传感器权限
+sudo usermod -a -G video Ubuntu （Ubuntu为你的用户名）
+创建一个包配置文件
+sudo gedit /usr/lib/pkgconfig/libopenni2.pc
+用一下代码覆盖
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include/openni2
+
+Name: OpenNI2
+Description: A general purpose driver for all OpenNI cameras.
+Version: 2.2.0.0
+Cflags: -I${includedir}
+Libs: -L${libdir} -lOpenNI2 -L${libdir}/OpenNI2/Drivers -lDummyDevice -lOniFile -lPS1080.so
+确保其能被正确找到，运行：
+pkg-config --modversion libopenni2
+此时，终端会有2.2.0.0回复 
+至此，OpenNI2已经安装好了，并可以驱动Xtion了
 # OpenNI
 
 http://structure.io/openni
@@ -96,7 +159,7 @@ Other than that, sensible and meaningful contributions are very welcome!
 				sudo apt-get update
 				sudo apt-get install sun-java6-jdk
 
-    	- On Ubuntu 12.x:
+    	- On Ubuntu 12.x（及以上）:
 
 				sudo apt-get install openjdk-6-jdk
 
