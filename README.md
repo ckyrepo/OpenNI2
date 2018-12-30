@@ -1,4 +1,4 @@
-#安装完必要package如###Ｌinux中所示，之后，按如下步骤
+#ubuntu14.04安装完必要package如###Ｌinux中所示，之后，按如下步骤
 
 find . -iname platform.arm
 
